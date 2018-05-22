@@ -13,7 +13,7 @@
 # limitations under the License.
 # ------------------------------------------------------------------------------
 
-version: '2.1'
+version: '2.0'
 
 services:
 
@@ -36,7 +36,7 @@ services:
       - rethink
       - rest-api
     environment:
-      - VALIDATOR_URL=tcp://validator:4004
+      - VALIDATOR_URL=tcp://127.0.0.1:4004
       - DB_HOST=rethink
       - SERVER=http://server:3000
     command: |
@@ -72,7 +72,7 @@ services:
     entrypoint: |
       bash -c "
         cargo build &&
-        supply-chain-tp -v -C tcp://validator:4004
+        supply-chain-tp -v -C tcp://127.0.0.1:4004
       "
 
   server:
@@ -97,7 +97,7 @@ services:
       - rethink
       - shell
     environment:
-      - VALIDATOR_URL=tcp://validator:4004
+      - VALIDATOR_URL=tcp://127.0.0.1:4004
       - DB_HOST=rethink
     entrypoint: node index.js
 
@@ -118,7 +118,7 @@ services:
       - validator
       - rethink
     environment:
-      - VALIDATOR_URL=tcp://validator:4004
+      - VALIDATOR_URL=tcp://127.0.0.1:4004
       - DB_HOST=rethink
 
   asset-client:
@@ -174,9 +174,10 @@ services:
           sawadm genesis config-genesis.batch
         fi;
         sawtooth-validator -vv \
-          --endpoint tcp://validator:8800 \
-          --bind component:tcp://eth0:4004 \
-          --bind network:tcp://eth0:8800
+          --endpoint tcp://172.31.26.213:8800 \
+          --peers tcp://172.31.27.24:8800 \
+          --bind component:tcp://127.0.0.1:4004 \
+          --bind network:tcp://172.31.26.213:8800
       "
 
   settings-tp:
@@ -184,7 +185,7 @@ services:
     container_name: supply-settings-tp
     depends_on:
       - validator
-    entrypoint: settings-tp -vv -C tcp://validator:4004
+    entrypoint: settings-tp -vv -C tcp://127.0.0.1:4004
 
   rest-api:
     image: hyperledger/sawtooth-rest-api:1.0
@@ -197,5 +198,5 @@ services:
       - validator
     entrypoint: |
       sawtooth-rest-api -vv
-        --connect tcp://validator:4004
-        --bind rest-api:8008
+        --connect tcp://127.0.0.1:4004
+        --bind *:8008
